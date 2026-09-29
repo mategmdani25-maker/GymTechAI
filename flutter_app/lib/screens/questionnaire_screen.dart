@@ -22,7 +22,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   String prioridadMuscular = 'Equilibrado';
   String tieneLesiones = 'Ninguna, estoy 100% sano';
 
-  // Simulación de carga inteligente
   void _iniciarProcesamientoIA() async {
     setState(() {
       estaCargandoIA = true;
@@ -110,7 +109,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
     double progreso = (pasoActual + 1) / pasos.length;
 
-    // Si está cargando la IA, mostramos la pantalla de carga premium
     if (estaCargandoIA) {
       return Scaffold(
         body: Center(
@@ -127,18 +125,13 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                 const SizedBox(height: 32),
                 const Text("GymTechAI Motor", style: TextStyle(fontSize: 14, color: Color(0xFFCCFF00), fontWeight: FontWeight.bold, letterSpacing: 1.5)),
                 const SizedBox(height: 8),
-                Text(
-                  mensajeCargaIA,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                ),
+                Text(mensajeCargaIA, textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
         ),
       );
     }
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -146,12 +139,23 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         leading: pasoActual > 0
             ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => setState(() => pasoActual--))
             : null,
-        title: LinearProgressIndicator(
-          value: progreso,
-          backgroundColor: Colors.white10,
-          color: const Color(0xFFCCFF00),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(4),
+        title: Row(
+          children: [
+            Expanded(
+              child: LinearProgressIndicator(
+                value: progreso,
+                backgroundColor: Colors.white10,
+                color: const Color(0xFFCCFF00),
+                minHeight: 6,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              "${pasoActual + 1}/${pasos.length}",
+              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ),
       body: Padding(
@@ -173,7 +177,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   if (pasoActual < pasos.length - 1) {
                     setState(() => pasoActual++);
                   } else {
-                    _iniciarProcesamientoIA(); // Llama a la carga interactiva
+                    _iniciarProcesamientoIA();
                   }
                 },
                 child: Text(pasoActual == pasos.length - 1 ? "Analizar Perfil con IA" : "Siguiente", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -206,9 +210,15 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: () => onCambio(opcion),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(opcion, style: TextStyle(color: esEste ? const Color(0xFFCCFF00) : Colors.white, fontSize: 14, fontWeight: esEste ? FontWeight.bold : FontWeight.normal)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(opcion, style: TextStyle(color: esEste ? const Color(0xFFCCFF00) : Colors.white, fontSize: 14, fontWeight: esEste ? FontWeight.bold : FontWeight.normal)),
+                  ),
+                  if (esEste)
+                    const Icon(Icons.check_circle, color: Color(0xFFCCFF00), size: 22)
+                ],
               ),
             ),
           );
