@@ -13,7 +13,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   bool estaCargandoIA = false;
   String mensajeCargaIA = "Procesando respuestas...";
 
-  // Variables de respuestas con valores por defecto (Memoria de Progreso activa)
+  // Variables de respuestas con memoria activa
   int diasEntrenamiento = 4;
   String tiempoSesion = '1 a 2 horas';
   String genero = 'Hombre';
@@ -39,6 +39,28 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     if (mounted) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentScreen()));
     }
+  }
+
+  // MEJORA: Cuadro de diálogo de confirmación para no perder el progreso
+  Future<bool> _mostrarDialogoConfirmacionSalida() async {
+    final resultado = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Salir del cuestionario?"),
+        content: const Text("Si sales ahora, perderás todas tus respuestas y la IA no podrá generar tu rutina."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // No salir
+            child: const Text("Continuar rellenando", style: TextStyle(color: Color(0xFFCCFF00))),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Sí salir
+            child: const Text("Salir de todas formas", style: TextStyle(color: Colors.redAccent)),
+          ),
+        ],
+      ),
+    );
+    return resultado ?? false;
   }
 
   @override
@@ -73,7 +95,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => genero = val),
     ));
 
-    // 4. Condicional: Menstruación (Solo si eligió Mujer)
+    // 4. Condicional: Menstruación
     if (genero == 'Mujer') {
       pasos.add(_buildSeleccionUnica(
         titulo: "¿Deseas adaptar el plan a tu ciclo menstrual?",
@@ -114,7 +136,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => prioridadMuscular = val),
     ));
 
-    // 8. Lesiones (Con botón sutil para omitir e indicar que está 100% sano)
+    // 8. Lesiones
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Tienes alguna lesión o molestia?",
       subtitulo: "El algoritmo evitará o sustituirá patrones de movimiento dolorosos.",
@@ -151,58 +173,79 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: pasoActual > 0
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => setState(() => pasoActual--))
-            : null,
-        title: Row(
-          children: [
-            Expanded(
-              child: LinearProgressIndicator(
-                value: progreso,
-                backgroundColor: Colors.white10,
-                color: const Color(0xFFCCFF00),
-                minHeight: 6,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              "${pasoActual + 1}/${pasos.length}",
-              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: pasos[pasoActual]),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 56,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFCCFF00),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    // MEJORA: Envolvemos la pantalla en PopScope para capturar el botón de retroceso físico o gestual
+    return PopScope(
+      canPop: false, // Bloqueamos la salida directa
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        // Si el usuario intenta ir atrás en la primera pregunta, salta el diálogo de advertencia
+        if (pasoActual == 0) {
+          final tuRutaDeSalida = await _mostrarDialogoConfirmacionSalida();
+          if (tuRutaDeSalida && context.mounted) {
+            Navigator.of(context).pop(); // Sale de la pantalla si confirma
+          }
+        } else {
+          // Si está en preguntas intermedias, simplemente retrocede una pregunta conservando las respuestas
+          setState(() => pasoActual--);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: pasoActual > 0
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => setState(() => pasoActual--),
+                )
+              : null,
+          title: Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: progreso,
+                  backgroundColor: Colors.white10,
+                  color: const Color(0xFFCCFF00),
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                onPressed: () {
-                  if (pasoActual < pasos.length - 1) {
-                    setState(() => pasoActual++);
-                  } else {
-                    _iniciarProcesamientoIA();
-                  }
-                },
-                child: Text(pasoActual == pasos.length - 1 ? "Analizar Perfil con IA" : "Siguiente", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+              Text(
+                "${pasoActual + 1}/${pasos.length}",
+                style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: pasos[pasoActual]),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFCCFF00),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: () {
+                    if (pasoActual < pasos.length - 1) {
+                      setState(() => pasoActual++);
+                    } else {
+                      _iniciarProcesamientoIA();
+                    }
+                  },
+                  child: Text(pasoActual == pasos.length - 1 ? "Analizar Perfil con IA" : "Siguiente", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
