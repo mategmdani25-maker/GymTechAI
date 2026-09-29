@@ -20,7 +20,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         precioPremium = "19,99€";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("¡Código aplicado! Ahorras un 20% (5€) de por vida."), backgroundColor: Color(0xFFCCFF00)),
+        const SnackBar(content: Text("¡Código aplicado! Plan Premium rebajado a 19,99€."), backgroundColor: Color(0xFFCCFF00)),
       );
     }
   }
@@ -32,12 +32,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         title: const Text("Suscripción", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // BOTÓN 'X' PARA SALIR SIN PAGAR (Evita atrapar al usuario)
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context); // Vuelve atrás al cuestionario limpiamente
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
@@ -50,13 +47,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const Text("Únete al entrenamiento inteligente con periodización matemática.", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
             const SizedBox(height: 24),
 
+            // CAMPO DE CÓDIGO
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(16), border: Border.all(color: codigoAplicado ? const Color(0xFFCCFF00) : Colors.white10)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("¿Tienes un código de referido o descuento?", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text("¿Tienes un código de referido?", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -86,6 +84,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 24),
 
+            // CARD PLAN GRATIS
             _buildPlanCard(
               titulo: "Plan Básico Gratis",
               precio: "0€",
@@ -97,6 +96,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 16),
 
+            // CARD PLAN PREMIUM (PRECIO DINÁMICO)
             _buildPlanCard(
               titulo: "Premium AI Athlete 🧠⚡",
               precio: precioPremium,
@@ -108,13 +108,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 "Autorregulación por IA en tiempo real",
                 "Optimización por Ciclo Menstrual",
                 "Gráficos avanzados de Volumen y Tonelaje",
-                if (codigoAplicado) "Descuento del 20% activo de por vida"
+                if (codigoAplicado) "Descuento de referido activo de por vida"
               ],
               textoBoton: "Probar Premium AI",
               esDestacado: true,
             ),
             const SizedBox(height: 16),
-
+            // CARD PLAN COACH
             _buildPlanCard(
               titulo: "GymTech Coach Pro 📋👨‍🏋️",
               precio: "49,99€",
@@ -124,7 +124,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
               textoBoton: "Activar Cuenta Coach",
               esDestacado: false,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
+
+            // SECCIÓN DE PREGUNTAS FRECUENTES (FAQ) DESPLEGABLES
+            const Text("Preguntas Frecuentes", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            _buildFAQTile("¿Cómo funciona el sistema de invitación?", "En tu perfil tendrás un código único. Si un amigo se registra con él, él pagará solo 19,99€/mes de por vida y tú te llevarás 5€ limpios de comisión por recomendación."),
+            _buildFAQTile("¿Cuándo puedo retirar mis ganancias?", "Puedes retirar tu dinero acumulado de forma segura mediante PayPal o transferencia bancaria una vez alcances el mínimo de 50€."),
+            _buildFAQTile("¿Tengo permanencia en los planes de pago?", "No, GymTechAI no tiene ninguna permanencia. Puedes cancelar tu suscripción premium o de entrenador en cualquier momento desde los ajustes."),
+            const SizedBox(height: 30),
           ],
         ),
       ),
@@ -178,6 +186,24 @@ class _PaymentScreenState extends State<PaymentScreen> {
               },
               child: Text(textoBoton, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFAQTile(String pregunta, String respuesta) {
+    return Card(
+      color: const Color(0xFF1E1E1E),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ExpansionTile(
+        title: Text(pregunta, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        iconColor: const Color(0xFFCCFF00),
+        collapsedIconColor: Colors.grey,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            child: Text(respuesta, style: const TextStyle(fontSize: 13, color: Colors.grey, height: 1.4)),
           ),
         ],
       ),
