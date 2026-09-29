@@ -10,6 +10,30 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool esRegistro = false;
+  bool ocultarContrasena = true; // Controla el ojo de la contraseña
+
+  // Controladores para leer el texto
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Estados de error para marcar en rojo
+  String? errorEmail;
+  String? errorPassword;
+
+  void _validarYEntrar() {
+    setState(() {
+      errorEmail = _emailController.text.isEmpty ? "El correo electrónico es obligatorio" : null;
+      errorPassword = _passwordController.text.isEmpty ? "La contraseña es obligatoria" : null;
+    });
+
+    // Si ambos campos están rellenos, avanzamos limpiamente
+    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const QuestionnaireScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +58,12 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 40),
 
+              // CAMPO DE EMAIL CON ALERTA EN ROJO
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
+                  errorText: errorEmail, // Muestra el texto rojo si está vacío
                   prefixIcon: const Icon(Icons.email_outlined),
                   filled: true,
                   fillColor: const Color(0xFF1E1E1E),
@@ -44,11 +71,24 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // CAMPO DE CONTRASEÑA CON OJO PARA OCULTAR/MOSTRAR
               TextField(
-                obscureText: true,
+                controller: _passwordController,
+                obscureText: ocultarContrasena,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
+                  errorText: errorPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
+                  // Botón interactivo del ojo
+                  suffixIcon: IconButton(
+                    icon: Icon(ocultarContrasena ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                    onPressed: () {
+                      setState(() {
+                        ocultarContrasena = !ocultarContrasena;
+                      });
+                    },
+                  ),
                   filled: true,
                   fillColor: const Color(0xFF1E1E1E),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -66,6 +106,7 @@ class _AuthScreenState extends State<AuthScreen> {
               
               SizedBox(height: esRegistro ? 32 : 16),
 
+              // BOTÓN PRINCIPAL CON VALIDACIÓN ACTIVADA
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -74,17 +115,21 @@ class _AuthScreenState extends State<AuthScreen> {
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const QuestionnaireScreen()));
-                  },
-                  child: Text(esRegistro ? "Registrarse" : "Iniciar Sesión", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  onPressed: _validarYEntrar, // Ejecuta la validación antes de pasar
+                  child: Text(
+                    esRegistro ? "Registrarse" : "Iniciar Sesión",
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
 
               TextButton(
                 onPressed: () => setState(() => esRegistro = !esRegistro),
-                child: Text(esRegistro ? "¿Ya tienes cuenta? Inicia Sesión" : "¿No tienes cuenta? Regístrate aquí", style: const TextStyle(color: Color(0xFFCCFF00))),
+                child: Text(
+                  esRegistro ? "¿Ya tienes cuenta? Inicia Sesión" : "¿No tienes cuenta? Regístrate aquí",
+                  style: const TextStyle(color: Color(0xFFCCFF00)),
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -129,7 +174,6 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 32),
 
-              // BOTÓN PARA CONTINUAR COMO INVITADO
               TextButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const QuestionnaireScreen()));
