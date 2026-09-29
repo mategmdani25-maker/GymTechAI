@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dashboard_screen.dart'; // Enlazado para el Paso 4 (La Pantalla Principal)
+import 'dashboard_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -17,13 +17,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_codigoController.text.isNotEmpty) {
       setState(() {
         codigoAplicado = true;
-        precioPremium = "19,99€"; // Aplica el 20% de descuento (5€ menos)
+        precioPremium = "19,99€";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("¡Código aplicado con éxito! Has ahorrado un 20% (5€)."),
-          backgroundColor: Color(0xFFCCFF00),
-        ),
+        const SnackBar(content: Text("¡Código aplicado! Ahorras un 20% (5€) de por vida."), backgroundColor: Color(0xFFCCFF00)),
       );
     }
   }
@@ -35,33 +32,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
         title: const Text("Suscripción", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        // BOTÓN 'X' PARA SALIR SIN PAGAR (Evita atrapar al usuario)
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Vuelve atrás al cuestionario limpiamente
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              "Desbloquea GymTechAI",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
+            const Text("Desbloquea GymTechAI", textAlign: TextAlign.center, style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
-            const Text(
-              "Únete al entrenamiento inteligente con periodización matemática.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
+            const Text("Únete al entrenamiento inteligente con periodización matemática.", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
             const SizedBox(height: 24),
 
-            // CAMPO DE CÓDIGO DE REFERIDO / DESCUENTO
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: codigoAplicado ? const Color(0xFFCCFF00) : Colors.white10),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(16), border: Border.all(color: codigoAplicado ? const Color(0xFFCCFF00) : Colors.white10)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,11 +75,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: codigoAplicado ? Colors.grey : const Color(0xFFCCFF00),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
+                        style: ElevatedButton.styleFrom(backgroundColor: codigoAplicado ? Colors.grey : const Color(0xFFCCFF00), foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                         onPressed: codigoAplicado ? null : _aplicarCodigo,
                         child: Text(codigoAplicado ? "Aplicado" : "Aplicar"),
                       ),
@@ -99,24 +86,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 24),
 
-            // PLAN 1: GRATIS
             _buildPlanCard(
               titulo: "Plan Básico Gratis",
               precio: "0€",
               periodo: "/ siempre",
               colorBorde: Colors.white12,
-              beneficios: [
-                "Rutinas base (Top-Set / Back-Off)",
-                "Intercambio manual de ejercicios",
-                "Calculadora de 1RM integrada",
-                "Registro de marcas e historial básico"
-              ],
+              beneficios: ["Rutinas base (Top-Set / Back-Off)", "Intercambio manual de ejercicios", "Calculadora de 1RM integrada", "Registro de marcas e historial básico"],
               textoBoton: "Continuar Gratis",
               esDestacado: false,
             ),
             const SizedBox(height: 16),
 
-            // PLAN 2: PREMIUM (ATLETAS) - PRECIO DINÁMICO
             _buildPlanCard(
               titulo: "Premium AI Athlete 🧠⚡",
               precio: precioPremium,
@@ -135,18 +115,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 16),
 
-            // PLAN 3: PLAN COACH (ENTRENADORES)
             _buildPlanCard(
               titulo: "GymTech Coach Pro 📋👨‍🏋️",
               precio: "49,99€",
               periodo: "/ mes",
               colorBorde: Colors.cyan,
-              beneficios: [
-                "Panel Multi-Cliente (Gestión de atletas)",
-                "Asignación de rutinas con IA a tus alumnos",
-                "Monitorización de fatiga y tonelaje del equipo",
-                "Exportación de datos e informes de rendimiento"
-              ],
+              beneficios: ["Panel Multi-Cliente (Gestión de atletas)", "Asignación de rutinas con IA a tus alumnos", "Monitorización de fatiga y tonelaje del equipo", "Exportación de datos e informes de rendimiento"],
               textoBoton: "Activar Cuenta Coach",
               esDestacado: false,
             ),
@@ -157,22 +131,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildPlanCard({
-    required String titulo,
-    required String precio,
-    required String periodo,
-    required Color colorBorde,
-    required List<String> beneficios,
-    required String textoBoton,
-    required bool esDestacado,
-  }) {
+  Widget _buildPlanCard({required String titulo, required String precio, required String periodo, required Color colorBorde, required List<String> beneficios, required String textoBoton, required bool esDestacado}) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorBorde, width: esDestacado ? 2 : 1),
-      ),
+      decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(20), border: Border.all(color: colorBorde, width: esDestacado ? 2 : 1)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -210,16 +172,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
           SizedBox(
             height: 48,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: esDestacado ? const Color(0xFFCCFF00) : Colors.white10,
-                foregroundColor: esDestacado ? Colors.black : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: esDestacado ? const Color(0xFFCCFF00) : Colors.white10, foregroundColor: esDestacado ? Colors.black : Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const DashboardScreen()));
               },
               child: Text(textoBoton, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ),
