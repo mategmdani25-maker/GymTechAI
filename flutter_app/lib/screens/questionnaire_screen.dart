@@ -13,11 +13,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   bool estaCargandoIA = false;
   String mensajeCargaIA = "Procesando respuestas...";
 
-  // Variables de respuestas
+  // Variables de respuestas con valores por defecto (Memoria de Progreso activa)
   int diasEntrenamiento = 4;
   String tiempoSesion = '1 a 2 horas';
   String genero = 'Hombre';
   String optimizarMenstruacion = 'No';
+  String rangoEdad = '25 a 40 años'; // Nueva pregunta de rango de edad
   String experiencia = 'Intermedio';
   String prioridadMuscular = 'Equilibrado';
   String tieneLesiones = 'Ninguna, estoy 100% sano';
@@ -44,6 +45,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   Widget build(BuildContext context) {
     List<Widget> pasos = [];
 
+    // 1. Días de entrenamiento
     pasos.add(_buildSlider(
       titulo: "¿Cuántos días vas a entrenar a la semana?",
       subtitulo: "La IA distribuirá tus grupos musculares según tu disponibilidad.",
@@ -53,6 +55,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => diasEntrenamiento = val.toInt()),
     ));
 
+    // 2. Tiempo por sesión
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuánto tiempo tienes por sesión?",
       subtitulo: "Ajustaremos el número total de ejercicios para optimizar tu tiempo.",
@@ -61,6 +64,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => tiempoSesion = val),
     ));
 
+    // 3. Género
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuál es tu género?",
       subtitulo: "Utilizamos esto para calibrar parámetros fisiológicos y metabólicos.",
@@ -69,6 +73,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => genero = val),
     ));
 
+    // 4. Condicional: Menstruación (Solo si eligió Mujer)
     if (genero == 'Mujer') {
       pasos.add(_buildSeleccionUnica(
         titulo: "¿Deseas adaptar el plan a tu ciclo menstrual?",
@@ -78,7 +83,16 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         onCambio: (val) => setState(() => optimizarMenstruacion = val),
       ));
     }
+    // 5. NUEVA PREGUNTA: Rango de edad (Autorregulación articular)
+    pasos.add(_buildSeleccionUnica(
+      titulo: "¿Cuál es tu rango de edad?",
+      subtitulo: "La IA adaptará el volumen para optimizar la recuperación de los tejidos.",
+      opciones: ['Menos de 25 años', '25 a 40 años', 'Más de 40 años'],
+      seleccionado: rangoEdad,
+      onCambio: (val) => setState(() => rangoEdad = val),
+    ));
 
+    // 6. Conocimiento y Autonomía
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuál es tu nivel de conocimiento en el entrenamiento?",
       subtitulo: "Esto definirá si necesitas guías básicas o herramientas de periodización avanzada.",
@@ -91,6 +105,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => experiencia = val),
     ));
 
+    // 7. Enfoque Muscular
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Qué grupo muscular deseas priorizar?",
       subtitulo: "La IA añadirá volumen estratégico al inicio de tus rutinas.",
@@ -99,6 +114,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => prioridadMuscular = val),
     ));
 
+    // 8. Lesiones
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Tienes alguna lesión o molestia?",
       subtitulo: "El algoritmo evitará o sustituirá patrones de movimiento dolorosos.",
@@ -132,6 +148,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         ),
       );
     }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -194,7 +211,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(titulo, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+        Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(subtitulo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 24),
@@ -232,7 +249,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(titulo, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+        Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(subtitulo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 48),
