@@ -4,13 +4,29 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-android { namespace = "com.gymtechai.app"; compileSdk = 35
-    defaultConfig { applicationId = "com.gymtechai.app"; minSdk = 26; targetSdk = 35; versionCode = 1; versionName = "0.1.0" }
+android {
+    namespace = "com.gymtechai.app"
+    compileSdk = 35
+    defaultConfig {
+        applicationId = "com.gymtechai.app"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "0.2.0"
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "2.0.21"
+    }
 }
 
-kotlin { jvmToolchain(17) }
+kotlin {
+    jvmToolchain(17)
+}
 
-اتdependencies {
+dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
     implementation("androidx.activity:activity-compose:1.10.0")
     implementation("androidx.compose.ui:ui")
@@ -21,6 +37,9 @@ kotlin { jvmToolchain(17) }
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    testImplementation("junit:junit:4.13.2")
 }

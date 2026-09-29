@@ -1,10 +1,56 @@
-# Cliente Android inicial
+# Cliente Android completamente integrado
 
-Abre `android/` con Android Studio Hedgehog o posterior.
+## Características
 
-La app incluye una primera navegación Compose con las pantallas Inicio, Rutina y Coach IA. El backend local puede apuntarse desde el cliente Retrofit usando:
+- ✅ Login/Logout con JWT
+- ✅ Almacenamiento de token en DataStore
+- ✅ Generación de macrociclos con persistencia
+- ✅ Coach IA con respuestas en tiempo real
+- ✅ Estadísticas de progreso
+- ✅ Retrofit + OkHttp para HTTP
+- ✅ MVVM con ViewModels
+- ✅ Jetpack Compose UI moderna
 
-- Emulador Android: `http://10.0.2.2:8000/`
-- Dispositivo físico: `http://IP_DE_TU_PC:8000/`
+## Configuración
 
-Siguiente integración: Retrofit, almacenamiento del JWT y conexión real de los botones con `/api/v1/auth`, `/api/v1/workouts/preview` y `/api/v1/ai/coach`.
+### URL del backend
+
+Edita `AppModule.kt`:
+
+```kotlin
+.baseUrl("http://10.0.2.2:8000/")  // Emulador
+// o
+.baseUrl("http://TU_IP:8000/")     // Dispositivo físico
+```
+
+### Compilar y ejecutar
+
+```bash
+cd android
+./gradlew assembleDebug
+./gradlew installDebug
+```
+
+O desde Android Studio:
+
+1. Sincroniza Gradle.
+2. Haz clic en **Run** > **Run 'app'**.
+
+## Flujo de usuario
+
+1. **Login**: Email y contraseña (crea cuenta si no existe).
+2. **Home**: Menú con Rutina, Coach IA y Estadísticas.
+3. **Rutina**: Ingresa 1RM y genera macrociclo de 4-52 semanas.
+4. **Coach**: Haz preguntas sobre técnica y recuperación.
+5. **Stats**: Ve sesiones, series y volumen total.
+
+## Backend requerido
+
+Asegúrate de que el backend está ejecutándose:
+
+```bash
+cd backend
+uvicorn app.main:app --reload
+```
+
+La app se conectará automáticamente.
