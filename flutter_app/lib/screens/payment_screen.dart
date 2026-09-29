@@ -101,7 +101,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildPlanCard(
               titulo: "Premium AI Athlete 🧠⚡",
               precio: precioPremium,
-              precioAntiguo: codigoAplicado ? "24,99€" : null, // Muestra el precio viejo tachado si se mete el código
+              precioAntiguo: codigoAplicado ? "24,99€" : null,
               periodo: "/ mes",
               colorBorde: const Color(0xFFCCFF00),
               beneficios: [
@@ -126,6 +126,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
               beneficios: ["Panel Multi-Cliente (Gestión de atletas)", "Asignación de rutinas con IA a tus alumnos", "Monitorización de fatiga y tonelaje del equipo", "Exportación de datos e informes de rendimiento"],
               textoBoton: "Activar Cuenta Coach",
               esDestacado: false,
+            ),
+            const SizedBox(height: 24),
+
+            // MEJORA: SELLO DE GARANTÍA Y CONFIANZA VISIBLE
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.02),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.verified_user_outlined, color: Color(0xFFCCFF00), size: 24),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "Garantía de reembolso de 14 días sin preguntas. Pago 100% seguro y encriptado.",
+                      style: TextStyle(fontSize: 12, color: Colors.grey, height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
 
@@ -173,7 +196,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
             alignment: PlaceholderAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              // EFECTO VISUAL: PRECIO ANTIGUO TACHADO EN ROJO
               if (precioAntiguo != null) ...[
                 Text(
                   precioAntiguo,
