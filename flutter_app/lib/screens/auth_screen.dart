@@ -10,24 +10,46 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool esRegistro = false;
-  bool ocultarContrasena = true; // Controla el ojo de la contraseña
+  bool ocultarContrasena = true;
 
-  // Controladores para leer el texto
+  // Controladores para leer el texto de las cajas
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // Estados de error para marcar en rojo
+  // Mensajes de error en rojo
   String? errorEmail;
   String? errorPassword;
 
+  // Función inteligente que valida el correo y la contraseña
   void _validarYEntrar() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    // Expresión regular estándar para comprobar si un texto es un email real
+    final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
     setState(() {
-      errorEmail = _emailController.text.isEmpty ? "El correo electrónico es obligatorio" : null;
-      errorPassword = _passwordController.text.isEmpty ? "La contraseña es obligatoria" : null;
+      // Validamos el Email
+      if (email.isEmpty) {
+        errorEmail = "El correo electrónico es obligatorio";
+      } else if (!emailRegex.hasMatch(email)) {
+        errorEmail = "Introduce un formato de correo válido (ej. nombre@web.com)";
+      } else {
+        errorEmail = null;
+      }
+
+      // Validamos la Contraseña
+      if (password.isEmpty) {
+        errorPassword = "La contraseña es obligatoria";
+      } else if (password.length < 6) {
+        errorPassword = "La contraseña debe tener al menos 6 caracteres";
+      } else {
+        errorPassword = null;
+      }
     });
 
-    // Si ambos campos están rellenos, avanzamos limpiamente
-    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+    // Si no hay errores en ningún campo, avanzamos de forma segura
+    if (errorEmail == null && errorPassword == null && email.isNotEmpty && password.isNotEmpty) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const QuestionnaireScreen()),
@@ -57,13 +79,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 style: const TextStyle(fontSize: 15, color: Colors.grey),
               ),
               const SizedBox(height: 40),
-
-              // CAMPO DE EMAIL CON ALERTA EN ROJO
+              // CAMPO DE EMAIL CON VALIDADOR DE FORMATO AUTOMÁTICO
               TextField(
                 controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
-                  errorText: errorEmail, // Muestra el texto rojo si está vacío
+                  errorText: errorEmail,
                   prefixIcon: const Icon(Icons.email_outlined),
                   filled: true,
                   fillColor: const Color(0xFF1E1E1E),
@@ -72,7 +94,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 16),
 
-              // CAMPO DE CONTRASEÑA CON OJO PARA OCULTAR/MOSTRAR
+              // CAMPO DE CONTRASEÑA CON CONTROL DE LONGITUD MÍNIMA (6 CARACTERES)
               TextField(
                 controller: _passwordController,
                 obscureText: ocultarContrasena,
@@ -80,14 +102,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   labelText: 'Contraseña',
                   errorText: errorPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  // Botón interactivo del ojo
                   suffixIcon: IconButton(
                     icon: Icon(ocultarContrasena ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
-                    onPressed: () {
-                      setState(() {
-                        ocultarContrasena = !ocultarContrasena;
-                      });
-                    },
+                    onPressed: () => setState(() => ocultarContrasena = !ocultarContrasena),
                   ),
                   filled: true,
                   fillColor: const Color(0xFF1E1E1E),
@@ -106,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
               
               SizedBox(height: esRegistro ? 32 : 16),
 
-              // BOTÓN PRINCIPAL CON VALIDACIÓN ACTIVADA
+              // BOTÓN DE ACCIÓN QUE ACTIVA LA VERIFICACIÓN SEGURA
               SizedBox(
                 height: 56,
                 child: ElevatedButton(
@@ -115,7 +132,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     foregroundColor: Colors.black,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  onPressed: _validarYEntrar, // Ejecuta la validación antes de pasar
+                  onPressed: _validarYEntrar,
                   child: Text(
                     esRegistro ? "Registrarse" : "Iniciar Sesión",
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
