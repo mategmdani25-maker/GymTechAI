@@ -64,12 +64,16 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ));
     }
 
-    // 5. Experiencia
+    // 5. Pregunta de Conocimiento y Autonomía (Ligado a estrategia de pagos)
     pasos.add(_buildSeleccionUnica(
-      titulo: "¿Cuál es tu nivel en el gimnasio?",
-      subtitulo: "Define la cantidad de series semanales que tu cuerpo tolera.",
-      opciones: ['Principiante (Menos de 1 año)', 'Intermedio (1 a 3 años)', 'Avanzado (Más de 3 años)'],
-      seleccionado: experiencia,
+      titulo: "¿Cuál es tu nivel de conocimiento en el entrenamiento?",
+      subtitulo: "Esto definirá si necesitas guías básicas o herramientas de periodización avanzada.",
+      opciones: [
+        'Básico (Necesito que me guíen en ejercicios y rutinas)',
+        'Intermedio (Conozco la técnica, busco estructurar mis semanas)',
+        'Avanzado (Domino RPE/RIR, periodización y optimización matemática)'
+      ],
+      seleccionado: experiencia, // Mantiene la variable interna para no romper el código
       onCambio: (val) => setState(() => experiencia = val),
     ));
 
