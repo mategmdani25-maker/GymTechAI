@@ -87,3 +87,41 @@ data class StatsResponse(
     val volumen_kg: Float,
     val ultima_sesion: String? = null
 )
+
+data class CheckInRequest(
+    val peso_ejercicio_hoy: Float,
+    val nivel_energia: Int,
+    val nivel_dolor: Int,
+    val estado_bio: String,
+    val salto_minimo: Float = 2.5f
+)
+
+data class CheckInResponse(
+    val id: Int,
+    val peso_ajustado_kg: Float,
+    val estado: String,
+    val energia: Int,
+    val dolor: Int
+)
+
+data class SessionSetRequest(
+    val ejercicio: String,
+    val peso_kg: Float,
+    val reps: Int,
+    val rpe: Float? = null
+)
+
+data class SessionRequest(
+    val fecha: String,
+    val sets: List<SessionSetRequest>
+)
+
+data class SessionItem(
+    val id: Int,
+    val fecha: String,
+    val sets: List<SessionSetRequest>
+)
+
+data class SessionResponse(
+    val items: List<SessionItem>
+)

@@ -6,8 +6,10 @@ import com.gymtechai.app.data.GymTechRepository
 import com.gymtechai.app.data.api.ApiService
 import com.gymtechai.app.data.api.AuthInterceptor
 import com.gymtechai.app.ui.AuthViewModel
+import com.gymtechai.app.ui.CheckInViewModel
 import com.gymtechai.app.ui.CoachViewModel
 import com.gymtechai.app.ui.RegisterViewModel
+import com.gymtechai.app.ui.SessionViewModel
 import com.gymtechai.app.ui.StatsViewModel
 import com.gymtechai.app.ui.WorkoutViewModel
 import okhttp3.OkHttpClient
@@ -22,14 +24,14 @@ object AppModule {
     private lateinit var workoutViewModel: WorkoutViewModel
     private lateinit var coachViewModel: CoachViewModel
     private lateinit var statsViewModel: StatsViewModel
+    private lateinit var checkInViewModel: CheckInViewModel
+    private lateinit var sessionViewModel: SessionViewModel
 
     fun initialize(context: Context) {
         val storage = AuthStorage(context.applicationContext)
         val client = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
-            .addInterceptor(AuthInterceptor {
-                kotlinx.coroutines.runBlocking { storage.getToken() }
-            })
+            .addInterceptor(AuthInterceptor { kotlinx.coroutines.runBlocking { storage.getToken() } })
             .build()
 
         val retrofit = Retrofit.Builder()
@@ -45,6 +47,8 @@ object AppModule {
         workoutViewModel = WorkoutViewModel(repository)
         coachViewModel = CoachViewModel(repository)
         statsViewModel = StatsViewModel(repository)
+        checkInViewModel = CheckInViewModel(repository)
+        sessionViewModel = SessionViewModel(repository)
     }
 
     fun getAuthViewModel(): AuthViewModel = authViewModel
@@ -52,4 +56,6 @@ object AppModule {
     fun getWorkoutViewModel(): WorkoutViewModel = workoutViewModel
     fun getCoachViewModel(): CoachViewModel = coachViewModel
     fun getStatsViewModel(): StatsViewModel = statsViewModel
+    fun getCheckInViewModel(): CheckInViewModel = checkInViewModel
+    fun getSessionViewModel(): SessionViewModel = sessionViewModel
 }

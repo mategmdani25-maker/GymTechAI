@@ -3,7 +3,6 @@ package com.gymtechai.app.data.api
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 
 interface ApiService {
     @POST("api/v1/auth/register")
@@ -20,4 +19,13 @@ interface ApiService {
 
     @GET("api/v1/tracking/stats")
     suspend fun getStats(): StatsResponse
+
+    @POST("api/v1/bioregulation/check-in")
+    suspend fun submitCheckIn(@Body request: CheckInRequest): Map<String, Any>
+
+    @POST("api/v1/tracking/sessions")
+    suspend fun saveSession(@Body request: SessionRequest): Map<String, Any>
+
+    @GET("api/v1/tracking/sessions")
+    suspend fun getSessions(): SessionResponse
 }

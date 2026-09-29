@@ -12,12 +12,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.gymtechai.app.ui.AuthViewModel
+import com.gymtechai.app.ui.CheckInViewModel
 import com.gymtechai.app.ui.CoachViewModel
 import com.gymtechai.app.ui.RegisterViewModel
+import com.gymtechai.app.ui.SessionViewModel
 import com.gymtechai.app.ui.StatsViewModel
 import com.gymtechai.app.ui.WorkoutViewModel
 
@@ -36,9 +39,11 @@ fun GymTechApp() {
     val workoutVm = AppModule.getWorkoutViewModel()
     val coachVm = AppModule.getCoachViewModel()
     val statsVm = AppModule.getStatsViewModel()
+    val checkInVm = AppModule.getCheckInViewModel()
+    val sessionVm = AppModule.getSessionViewModel()
 
     val loggedIn by authVm.isLoggedIn.collectAsState()
-    var currentScreen by remember { mutableStateOf(if (loggedIn) "home" else "login") }
+    var selectedTab by remember { mutableStateOf("home") }
     var showRegister by remember { mutableStateOf(false) }
 
     MaterialTheme(colorScheme = darkColorScheme()) {
@@ -48,6 +53,26 @@ fun GymTechApp() {
                     title = { Text("GymTechAI") },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 )
+            },
+            bottomBar = {
+                if (loggedIn) {
+                    NavigationBar {
+                        listOf(
+                            "home" to "Inicio",
+                            "rutina" to "Rutina",
+                            "checkin" to "Check-in",
+                            "coach" to "Coach",
+                            "stats" to "Stats"
+                        ).forEach { (key, label) ->
+                            NavigationBarItem(
+                                selected = selectedTab == key,
+                                onClick = { selectedTab = key },
+                                icon = { },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                }
             }
         ) { padding ->
             Column(
@@ -61,49 +86,32 @@ fun GymTechApp() {
                     if (showRegister) {
                         RegisterScreen(
                             vm = registerVm,
-                            onRegistered = {
-                                showRegister = false
-                                currentScreen = "login"
-                            },
-                            onBackToLogin = {
-                                showRegister = false
-                                currentScreen = "login"
-                            }
+                            onRegistered = { showRegister = false },
+                            onBackToLogin = { showRegister = false }
                         )
                     } else {
                         LoginScreen(
                             vm = authVm,
-                            onLoginSuccess = { currentScreen = "home" },
+                            onLoginSuccess = { selectedTab = "home" },
                             onRegisterClick = { showRegister = true }
                         )
                     }
                 } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("home", "rutina", "coach", "stats").forEach { item ->
-                            OutlinedButton(
-                                onClick = { currentScreen = item },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(item)
-                            }
-                        }
+                    when (selectedTab) {
+                        "rutina" -> WorkoutScreen(workoutVm)
+                        "checkin" -> CheckInScreen(checkInVm)
+                        "coach" -> CoachScreen(coachVm)
+                        "stats" -> StatsScreen(statsVm)
+                        "home" -> DashboardScreen(sessionVm, statsVm)
+                        else -> DashboardScreen(sessionVm, statsVm)
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
                     Button(
-                        onClick = { authVm.logout(); currentScreen = "login" },
+                        onClick = { authVm.logout(); selectedTab = "home" },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Cerrar sesión")
-                    }
-
-                    when (currentScreen) {
-                        "rutina" -> WorkoutScreen(workoutVm)
-                        "coach" -> CoachScreen(coachVm)
-                        "stats" -> StatsScreen(statsVm)
-                        else -> HomeScreen()
                     }
                 }
             }
@@ -112,11 +120,7 @@ fun GymTechApp() {
 }
 
 @Composable
-fun LoginScreen(
-    vm: AuthViewModel,
-    onLoginSuccess: () -> Unit,
-    onRegisterClick: () -> Unit
-) {
+fun LoginScreen(vm: AuthViewModel, onLoginSuccess: () -> Unit, onRegisterClick: () -> Unit) {
     val email by vm.email.collectAsState()
     val password by vm.password.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
@@ -127,10 +131,7 @@ fun LoginScreen(
         if (loggedIn) onLoginSuccess()
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp)
-    ) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -138,22 +139,9 @@ fun LoginScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Iniciar sesión", style = MaterialTheme.typography.headlineSmall)
-            OutlinedTextField(
-                value = email,
-                onValueChange = { vm.setEmail(it) },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = password,
-                onValueChange = { vm.setPassword(it) },
-                label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
-            )
-            if (!error.isNullOrEmpty()) {
-                Text(error ?: "", color = MaterialTheme.colorScheme.error)
-            }
+            OutlinedTextField(value = email, onValueChange = { vm.setEmail(it) }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = password, onValueChange = { vm.setPassword(it) }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+            if (!error.isNullOrEmpty()) Text(error ?: "", color = MaterialTheme.colorScheme.error)
             Button(onClick = { vm.login() }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
                 Text(if (isLoading) "Entrando..." else "Login")
             }
@@ -165,11 +153,7 @@ fun LoginScreen(
 }
 
 @Composable
-fun RegisterScreen(
-    vm: RegisterViewModel,
-    onRegistered: () -> Unit,
-    onBackToLogin: () -> Unit
-) {
+fun RegisterScreen(vm: RegisterViewModel, onRegistered: () -> Unit, onBackToLogin: () -> Unit) {
     val nombre by vm.nombre.collectAsState()
     val email by vm.email.collectAsState()
     val password by vm.password.collectAsState()
@@ -181,10 +165,7 @@ fun RegisterScreen(
         if (registered) onRegistered()
     }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp)
-    ) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -192,28 +173,10 @@ fun RegisterScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Crear cuenta", style = MaterialTheme.typography.headlineSmall)
-            OutlinedTextField(
-                value = nombre,
-                onValueChange = { vm.setNombre(it) },
-                label = { Text("Nombre") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = email,
-                onValueChange = { vm.setEmail(it) },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = password,
-                onValueChange = { vm.setPassword(it) },
-                label = { Text("Contraseña") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation()
-            )
-            if (!error.isNullOrEmpty()) {
-                Text(error ?: "", color = MaterialTheme.colorScheme.error)
-            }
+            OutlinedTextField(value = nombre, onValueChange = { vm.setNombre(it) }, label = { Text("Nombre") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = email, onValueChange = { vm.setEmail(it) }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = password, onValueChange = { vm.setPassword(it) }, label = { Text("Contraseña") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
+            if (!error.isNullOrEmpty()) Text(error ?: "", color = MaterialTheme.colorScheme.error)
             Button(onClick = { vm.register() }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
                 Text(if (isLoading) "Creando..." else "Registrarse")
             }
@@ -225,47 +188,75 @@ fun RegisterScreen(
 }
 
 @Composable
-fun HomeScreen() {
+fun DashboardScreen(sessionVm: SessionViewModel, statsVm: StatsViewModel) {
+    val sessions by sessionVm.sessions.collectAsState()
+    val stats by statsVm.stats.collectAsState()
+    val isLoading by sessionVm.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        sessionVm.loadSessions()
+        statsVm.loadStats()
+    }
+
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            Text("Bienvenido a GymTechAI", style = MaterialTheme.typography.headlineSmall)
+            Text("Resumen", style = MaterialTheme.typography.headlineSmall)
         }
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Tu plan del día", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Rutina progresiva")
-                    Text("• Coach IA activado")
-                    Text("• Seguimiento de volumen")
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                val cards = listOf(
+                    "Sesiones" to (stats["sesiones"] ?: 0),
+                    "Series" to (stats["series"] ?: 0),
+                    "Volumen" to (stats["volumen"] ?: 0)
+                )
+                cards.forEach { (label, value) ->
+                    Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(16.dp)) {
+                        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(label, style = MaterialTheme.typography.labelMedium)
+                            Text(value.toString(), style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
                 }
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                listOf(
-                    "Fuerza" to "85%",
-                    "IA" to "Online",
-                    "Volumen" to "+12%"
-                ).forEach { (label, value) ->
-                    Card(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(label, style = MaterialTheme.typography.labelMedium)
-                            Text(value, style = MaterialTheme.typography.titleMedium)
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Últimas sesiones", style = MaterialTheme.typography.titleMedium)
+                    if (isLoading) Text("Cargando...")
+                    else if (sessions.isEmpty()) Text("Todavía no hay sesiones registradas")
+                    else {
+                        sessions.take(3).forEach { session ->
+                            Text("• ${session.fecha} · ${session.sets.size} series")
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun CheckInScreen(vm: CheckInViewModel) {
+    val peso by vm.peso.collectAsState()
+    val energia by vm.energia.collectAsState()
+    val dolor by vm.dolor.collectAsState()
+    val estado by vm.estado.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
+    val error by vm.error.collectAsState()
+    val success by vm.success.collectAsState()
+
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Check-in diario", style = MaterialTheme.typography.headlineSmall)
+            OutlinedTextField(value = peso, onValueChange = { vm.setPeso(it) }, label = { Text("Peso actual (kg)") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = energia, onValueChange = { vm.setEnergia(it) }, label = { Text("Energía (1-5)") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = dolor, onValueChange = { vm.setDolor(it) }, label = { Text("Dolor (0-5)") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = estado, onValueChange = { vm.setEstado(it) }, label = { Text("Estado") }, modifier = Modifier.fillMaxWidth())
+            if (!error.isNullOrEmpty()) Text(error ?: "", color = MaterialTheme.colorScheme.error)
+            if (success) Text("Check-in registrado correctamente", color = MaterialTheme.colorScheme.primary)
+            Button(onClick = { vm.submit() }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
+                Text(if (isLoading) "Guardando..." else "Guardar check-in")
             }
         }
     }
@@ -281,28 +272,18 @@ fun WorkoutScreen(vm: WorkoutViewModel) {
     val error by vm.error.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
 
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Text("Generar macrociclo", style = MaterialTheme.typography.headlineSmall)
         }
         item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(value = squat, onValueChange = { vm.setSquat(it) }, label = { Text("1RM Sentadilla") }, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = bench, onValueChange = { vm.setBench(it) }, label = { Text("1RM Press") }, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = rdl, onValueChange = { vm.setRdl(it) }, label = { Text("1RM RDL") }, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(value = weeks, onValueChange = { vm.setWeeks(it) }, label = { Text("Semanas") }, modifier = Modifier.fillMaxWidth())
-                    if (!error.isNullOrEmpty()) {
-                        Text(error ?: "", color = MaterialTheme.colorScheme.error)
-                    }
+                    if (!error.isNullOrEmpty()) Text(error ?: "", color = MaterialTheme.colorScheme.error)
                     Button(onClick = { vm.generateWorkout() }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
                         Text(if (isLoading) "Generando..." else "Generar rutina")
                     }
@@ -334,26 +315,11 @@ fun CoachScreen(vm: CoachViewModel) {
     val isLoading by vm.isLoading.collectAsState()
     val error by vm.error.collectAsState()
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Coach IA", style = MaterialTheme.typography.headlineSmall)
-            OutlinedTextField(
-                value = question,
-                onValueChange = { vm.setQuestion(it) },
-                label = { Text("Pregunta") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (!error.isNullOrEmpty()) {
-                Text(error ?: "", color = MaterialTheme.colorScheme.error)
-            }
+            OutlinedTextField(value = question, onValueChange = { vm.setQuestion(it) }, label = { Text("Pregunta") }, modifier = Modifier.fillMaxWidth())
+            if (!error.isNullOrEmpty()) Text(error ?: "", color = MaterialTheme.colorScheme.error)
             Button(onClick = { vm.askCoach() }, enabled = !isLoading, modifier = Modifier.fillMaxWidth()) {
                 Text(if (isLoading) "Pensando..." else "Preguntar")
             }
@@ -373,20 +339,11 @@ fun StatsScreen(vm: StatsViewModel) {
 
     LaunchedEffect(Unit) { vm.loadStats() }
 
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Estadísticas", style = MaterialTheme.typography.headlineSmall)
-            if (isLoading) {
-                Text("Cargando...")
-            } else {
+            if (isLoading) Text("Cargando...")
+            else {
                 Text("Sesiones: ${stats["sesiones"] ?: 0}")
                 Text("Series: ${stats["series"] ?: 0}")
                 Text("Volumen: ${stats["volumen"] ?: 0} kg")
