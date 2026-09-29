@@ -18,7 +18,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   String tiempoSesion = '1 a 2 horas';
   String genero = 'Hombre';
   String optimizarMenstruacion = 'No';
-  String rangoEdad = '25 a 40 años'; // Nueva pregunta de rango de edad
+  String rangoEdad = '25 a 40 años';
   String experiencia = 'Intermedio';
   String prioridadMuscular = 'Equilibrado';
   String tieneLesiones = 'Ninguna, estoy 100% sano';
@@ -83,7 +83,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         onCambio: (val) => setState(() => optimizarMenstruacion = val),
       ));
     }
-    // 5. NUEVA PREGUNTA: Rango de edad (Autorregulación articular)
+    // 5. Rango de edad
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuál es tu rango de edad?",
       subtitulo: "La IA adaptará el volumen para optimizar la recuperación de los tejidos.",
@@ -114,13 +114,15 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => prioridadMuscular = val),
     ));
 
-    // 8. Lesiones
+    // 8. Lesiones (Con botón sutil para omitir e indicar que está 100% sano)
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Tienes alguna lesión o molestia?",
       subtitulo: "El algoritmo evitará o sustituirá patrones de movimiento dolorosos.",
       opciones: ['Ninguna, estoy 100% sano', 'Espalda baja', 'Rodillas', 'Hombros'],
       seleccionado: tieneLesiones,
       onCambio: (val) => setState(() => tieneLesiones = val),
+      mostrarOmitir: true,
+      onOmitir: () => setState(() => tieneLesiones = 'Ninguna, estoy 100% sano'),
     ));
 
     double progreso = (pasoActual + 1) / pasos.length;
@@ -206,12 +208,30 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     );
   }
 
-  Widget _buildSeleccionUnica({required String titulo, required String subtitulo, required List<String> opciones, required String seleccionado, required ValueChanged<String> onCambio}) {
+  Widget _buildSeleccionUnica({
+    required String titulo, 
+    required String subtitulo, 
+    required List<String> opciones, 
+    required String seleccionado, 
+    required ValueChanged<String> onCambio,
+    bool mostrarOmitir = false,
+    VoidCallback? onOmitir,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
+            if (mostrarOmitir)
+              TextButton(
+                onPressed: onOmitir,
+                child: const Text("Omitir", style: TextStyle(color: Colors.grey, fontSize: 14, decoration: TextDecoration.underline)),
+              ),
+          ],
+        ),
         const SizedBox(height: 8),
         Text(subtitulo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 24),
