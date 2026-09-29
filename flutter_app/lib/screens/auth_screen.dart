@@ -8,7 +8,7 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AlphaScreenState extends State<AuthScreen> {
   bool esRegistro = false;
   bool ocultarContrasena = true;
 
@@ -20,16 +20,26 @@ class _AuthScreenState extends State<AuthScreen> {
   String? errorEmail;
   String? errorPassword;
 
-  // Función inteligente que valida el correo y la contraseña
+  // FUNCIÓN INTELIGENTE: Calcula el saludo de bienvenida según la hora real del dispositivo
+  String _obtenerSaludoDinamico() {
+    final hora = DateTime.now().hour;
+    if (hora >= 6 && hora < 12) {
+      return "¡Buenos días, atleta! 🌅";
+    } else if (hora >= 12 && hora < 20) {
+      return "¡Buenas tardes! A por el entrenamiento 🏋️";
+    } else {
+      return "¡Buenas noches! Cerremos el día con fuerza 🌙";
+    }
+  }
+
+  // Función que valida el correo y la contraseña antes de avanzar
   void _validarYEntrar() {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // Expresión regular estándar para comprobar si un texto es un email real
     final RegExp emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
     setState(() {
-      // Validamos el Email
       if (email.isEmpty) {
         errorEmail = "El correo electrónico es obligatorio";
       } else if (!emailRegex.hasMatch(email)) {
@@ -38,7 +48,6 @@ class _AuthScreenState extends State<AuthScreen> {
         errorEmail = null;
       }
 
-      // Validamos la Contraseña
       if (password.isEmpty) {
         errorPassword = "La contraseña es obligatoria";
       } else if (password.length < 6) {
@@ -48,7 +57,6 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     });
 
-    // Si no hay errores en ningún campo, avanzamos de forma segura
     if (errorEmail == null && errorPassword == null && email.isNotEmpty && password.isNotEmpty) {
       Navigator.push(
         context,
@@ -67,16 +75,18 @@ class _AuthScreenState extends State<AuthScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 30),
+              // LOGO DE GYMTECHAI
               const Text(
                 "🏋️ GymTechAI",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 38, fontWeight: FontWeight.bold, color: Color(0xFFCCFF00)),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              // MEJORA: TEXTO DINÁMICO QUE CAMBIA SEGÚN EL MOMENTO DEL DÍA
               Text(
-                esRegistro ? "Crea tu cuenta inteligente" : "Bienvenido de nuevo a tus entrenamientos",
+                esRegistro ? "Crea tu cuenta inteligente" : _obtenerSaludoDinamico(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 15, color: Colors.grey),
+                style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 40),
               // CAMPO DE EMAIL CON VALIDADOR DE FORMATO AUTOMÁTICO
