@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'payment_screen.dart'; // Enlazado para el Paso 3 (Planes de Pago)
+import 'payment_screen.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -10,8 +10,10 @@ class QuestionnaireScreen extends StatefulWidget {
 
 class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   int pasoActual = 0;
+  bool estaCargandoIA = false;
+  String mensajeCargaIA = "Procesando respuestas...";
 
-  // Variables para guardar las respuestas reales
+  // Variables de respuestas
   int diasEntrenamiento = 4;
   String tiempoSesion = '1 a 2 horas';
   String genero = 'Hombre';
@@ -20,12 +22,29 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   String prioridadMuscular = 'Equilibrado';
   String tieneLesiones = 'Ninguna, estoy 100% sano';
 
+  // Simulación de carga inteligente
+  void _iniciarProcesamientoIA() async {
+    setState(() {
+      estaCargandoIA = true;
+      mensajeCargaIA = "🧠 Analizando tu capacidad de recuperación...";
+    });
+    
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => mensajeCargaIA = "📊 Calculando volumen total y series de Back-Off...");
+    
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => mensajeCargaIA = "🏋️ Estructurando bloques de periodización matemática...");
+    
+    await Future.delayed(const Duration(seconds: 1));
+    if (mounted) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentScreen()));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Generamos las pantallas de preguntas de forma dinámica
     List<Widget> pasos = [];
 
-    // 1. Días de entrenamiento
     pasos.add(_buildSlider(
       titulo: "¿Cuántos días vas a entrenar a la semana?",
       subtitulo: "La IA distribuirá tus grupos musculares según tu disponibilidad.",
@@ -35,7 +54,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => diasEntrenamiento = val.toInt()),
     ));
 
-    // 2. Tiempo por sesión
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuánto tiempo tienes por sesión?",
       subtitulo: "Ajustaremos el número total de ejercicios para optimizar tu tiempo.",
@@ -44,7 +62,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => tiempoSesion = val),
     ));
 
-    // 3. Género
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuál es tu género?",
       subtitulo: "Utilizamos esto para calibrar parámetros fisiológicos y metabólicos.",
@@ -53,7 +70,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => genero = val),
     ));
 
-    // 4. Condicional: Menstruación (Solo si eligió Mujer)
     if (genero == 'Mujer') {
       pasos.add(_buildSeleccionUnica(
         titulo: "¿Deseas adaptar el plan a tu ciclo menstrual?",
@@ -64,20 +80,18 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ));
     }
 
-    // 5. Pregunta de Conocimiento y Autonomía (Ligado a estrategia de pagos)
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Cuál es tu nivel de conocimiento en el entrenamiento?",
       subtitulo: "Esto definirá si necesitas guías básicas o herramientas de periodización avanzada.",
       opciones: [
-        'Básico (Necesito que me guíen en ejercicios y rutinas)',
-        'Intermedio (Conozco la técnica, busco estructurar mis semanas)',
-        'Avanzado (Domino RPE/RIR, periodización y optimización matemática)'
+        'Básico (Necesito que me guíen en ejercicios)',
+        'Intermedio (Busco estructurar mis semanas)',
+        'Avanzado (Domino RPE/RIR y optimización matemática)'
       ],
-      seleccionado: experiencia, // Mantiene la variable interna para no romper el código
+      seleccionado: experiencia,
       onCambio: (val) => setState(() => experiencia = val),
     ));
 
-    // 6. Enfoque Muscular
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Qué grupo muscular deseas priorizar?",
       subtitulo: "La IA añadirá volumen estratégico al inicio de tus rutinas.",
@@ -86,7 +100,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       onCambio: (val) => setState(() => prioridadMuscular = val),
     ));
 
-    // 7. Lesiones
     pasos.add(_buildSeleccionUnica(
       titulo: "¿Tienes alguna lesión o molestia?",
       subtitulo: "El algoritmo evitará o sustituirá patrones de movimiento dolorosos.",
@@ -97,15 +110,41 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
     double progreso = (pasoActual + 1) / pasos.length;
 
+    // Si está cargando la IA, mostramos la pantalla de carga premium
+    if (estaCargandoIA) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(color: Color(0xFFCCFF00), strokeWidth: 5),
+                ),
+                const SizedBox(height: 32),
+                const Text("GymTechAI Motor", style: TextStyle(fontSize: 14, color: Color(0xFFCCFF00), fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                const SizedBox(height: 8),
+                Text(
+                  mensajeCargaIA,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: pasoActual > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => setState(() => pasoActual--),
-              )
+            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => setState(() => pasoActual--))
             : null,
         title: LinearProgressIndicator(
           value: progreso,
@@ -134,17 +173,10 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   if (pasoActual < pasos.length - 1) {
                     setState(() => pasoActual++);
                   } else {
-                    // Al finalizar, avanza al Paso 3: Planes de Pago
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PaymentScreen()),
-                    );
+                    _iniciarProcesamientoIA(); // Llama a la carga interactiva
                   }
                 },
-                child: Text(
-                  pasoActual == pasos.length - 1 ? "Analizar Perfil con IA" : "Siguiente",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                child: Text(pasoActual == pasos.length - 1 ? "Analizar Perfil con IA" : "Siguiente", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -153,13 +185,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     );
   }
 
-  Widget _buildSeleccionUnica({
-    required String titulo,
-    required String subtitulo,
-    required List<String> opciones,
-    required String seleccionado,
-    required ValueChanged<String> onCambio,
-  }) {
+  Widget _buildSeleccionUnica({required String titulo, required String subtitulo, required List<String> opciones, required String seleccionado, required ValueChanged<String> onCambio}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -167,12 +193,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         Text(titulo, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Text(subtitulo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
         ...opciones.map((opcion) {
           final esEste = seleccionado == opcion;
           return Container(
-            margin: const EdgeInsets.only(bottom: 14),
-            height: 60,
+            margin: const EdgeInsets.only(bottom: 12),
+            height: 58,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 backgroundColor: esEste ? const Color(0xFFCCFF00).withOpacity(0.1) : const Color(0xFF1E1E1E),
@@ -182,10 +208,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               onPressed: () => onCambio(opcion),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  opcion,
-                  style: TextStyle(color: esEste ? const Color(0xFFCCFF00) : Colors.white, fontSize: 15, fontWeight: esEste ? FontWeight.bold : FontWeight.normal),
-                ),
+                child: Text(opcion, style: TextStyle(color: esEste ? const Color(0xFFCCFF00) : Colors.white, fontSize: 14, fontWeight: esEste ? FontWeight.bold : FontWeight.normal)),
               ),
             ),
           );
@@ -194,14 +217,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     );
   }
 
-  Widget _buildSlider({
-    required String titulo,
-    required String subtitulo,
-    required double min,
-    required double max,
-    required double valorActual,
-    required ValueChanged<double> onCambio,
-  }) {
+  Widget _buildSlider({required String titulo, required String subtitulo, required double min, required double max, required double valorActual, required ValueChanged<double> onCambio}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -210,22 +226,9 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         const SizedBox(height: 8),
         Text(subtitulo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 48),
-        Center(
-          child: Text(
-            "${valorActual.toInt()} días a la semana",
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFFCCFF00)),
-          ),
-        ),
+        Center(child: Text("${valorActual.toInt()} días a la semana", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFFCCFF00)))),
         const SizedBox(height: 16),
-        Slider(
-          value: valorActual,
-          min: min,
-          max: max,
-          divisions: (max - min).toInt(),
-          activeColor: const Color(0xFFCCFF00),
-          inactiveColor: Colors.white10,
-          onChanged: onCambio,
-        ),
+        Slider(value: valorActual, min: min, max: max, divisions: (max - min).toInt(), activeColor: const Color(0xFFCCFF00), inactiveColor: Colors.white10, onChanged: onCambio),
       ],
     );
   }
