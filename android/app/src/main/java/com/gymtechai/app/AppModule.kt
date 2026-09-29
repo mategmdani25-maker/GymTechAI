@@ -10,6 +10,7 @@ import com.gymtechai.app.ui.CoachViewModel
 import com.gymtechai.app.ui.StatsViewModel
 import com.gymtechai.app.ui.WorkoutViewModel
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -23,14 +24,10 @@ object AppModule {
     private lateinit var statsVM: StatsViewModel
 
     fun initialize(context: Context) {
-        val storage = AuthStorage(context)
-        val token = runBlocking {
-            storage.token.collect { null }
-            null
-        }
+        val storage = AuthStorage(context.applicationContext)
         val client = OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            .addInterceptor(AuthInterceptor { runBlocking { storage.token.collect { t -> return@collect t } }; null })
+            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC))
+            .addInterceptor(AuthInterceptor { runBlocking { storage.token.first() } })
             .build()
         val retrofit = Retrofit.Builder()
             .baseUrl("http://10.0.2.2:8000/")
