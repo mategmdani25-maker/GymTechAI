@@ -47,7 +47,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const Text("Únete al entrenamiento inteligente con periodización matemática.", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey)),
             const SizedBox(height: 24),
 
-            // CAMPO DE CÓDIGO
+            // CAMPO DE CÓDIGO DE REFERIDO
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(16), border: Border.all(color: codigoAplicado ? const Color(0xFFCCFF00) : Colors.white10)),
@@ -88,6 +88,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildPlanCard(
               titulo: "Plan Básico Gratis",
               precio: "0€",
+              precioAntiguo: null,
               periodo: "/ siempre",
               colorBorde: Colors.white12,
               beneficios: ["Rutinas base (Top-Set / Back-Off)", "Intercambio manual de ejercicios", "Calculadora de 1RM integrada", "Registro de marcas e historial básico"],
@@ -96,10 +97,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 16),
 
-            // CARD PLAN PREMIUM (PRECIO DINÁMICO)
+            // CARD PLAN PREMIUM (CON PRECIO TACHADO INTEGRADO)
             _buildPlanCard(
               titulo: "Premium AI Athlete 🧠⚡",
               precio: precioPremium,
+              precioAntiguo: codigoAplicado ? "24,99€" : null, // Muestra el precio viejo tachado si se mete el código
               periodo: "/ mes",
               colorBorde: const Color(0xFFCCFF00),
               beneficios: [
@@ -118,6 +120,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildPlanCard(
               titulo: "GymTech Coach Pro 📋👨‍🏋️",
               precio: "49,99€",
+              precioAntiguo: null,
               periodo: "/ mes",
               colorBorde: Colors.cyan,
               beneficios: ["Panel Multi-Cliente (Gestión de atletas)", "Asignación de rutinas con IA a tus alumnos", "Monitorización de fatiga y tonelaje del equipo", "Exportación de datos e informes de rendimiento"],
@@ -139,7 +142,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildPlanCard({required String titulo, required String precio, required String periodo, required Color colorBorde, required List<String> beneficios, required String textoBoton, required bool esDestacado}) {
+  Widget _buildPlanCard({
+    required String titulo,
+    required String precio,
+    required String? precioAntiguo,
+    required String periodo,
+    required Color colorBorde,
+    required List<String> beneficios,
+    required String textoBoton,
+    required bool esDestacado,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: const Color(0xFF1E1E1E), borderRadius: BorderRadius.circular(20), border: Border.all(color: colorBorde, width: esDestacado ? 2 : 1)),
@@ -161,7 +173,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
             alignment: PlaceholderAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(precio, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+              // EFECTO VISUAL: PRECIO ANTIGUO TACHADO EN ROJO
+              if (precioAntiguo != null) ...[
+                Text(
+                  precioAntiguo,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.redAccent, decoration: TextDecoration.lineThrough),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(precio, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: precioAntiguo != null ? const Color(0xFFCCFF00) : Colors.white)),
               Text(periodo, style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ],
           ),
