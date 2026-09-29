@@ -1,56 +1,37 @@
-# Cliente Android completamente integrado
+# GymTechAI Android
 
-## Características
+Este proyecto Android se conecta con el backend en:
 
-- ✅ Login/Logout con JWT
-- ✅ Almacenamiento de token en DataStore
-- ✅ Generación de macrociclos con persistencia
-- ✅ Coach IA con respuestas en tiempo real
-- ✅ Estadísticas de progreso
-- ✅ Retrofit + OkHttp para HTTP
-- ✅ MVVM con ViewModels
-- ✅ Jetpack Compose UI moderna
-
-## Configuración
-
-### URL del backend
-
-Edita `AppModule.kt`:
-
-```kotlin
-.baseUrl("http://10.0.2.2:8000/")  // Emulador
-// o
-.baseUrl("http://TU_IP:8000/")     // Dispositivo físico
+```txt
+http://10.0.2.2:8000/
 ```
 
-### Compilar y ejecutar
+## Requisitos
 
-```bash
-cd android
-./gradlew assembleDebug
-./gradlew installDebug
-```
+- Android Studio
+- Java 17
+- Android SDK 35
 
-O desde Android Studio:
+## Ejecutar
 
-1. Sincroniza Gradle.
-2. Haz clic en **Run** > **Run 'app'**.
-
-## Flujo de usuario
-
-1. **Login**: Email y contraseña (crea cuenta si no existe).
-2. **Home**: Menú con Rutina, Coach IA y Estadísticas.
-3. **Rutina**: Ingresa 1RM y genera macrociclo de 4-52 semanas.
-4. **Coach**: Haz preguntas sobre técnica y recuperación.
-5. **Stats**: Ve sesiones, series y volumen total.
+1. Abre la carpeta `android/` en Android Studio.
+2. Sincroniza Gradle.
+3. Ejecuta la app en un emulador.
 
 ## Backend requerido
 
-Asegúrate de que el backend está ejecutándose:
+Debe estar arrancado antes de usar la app:
 
 ```bash
 cd backend
+source .venv/bin/activate
 uvicorn app.main:app --reload
 ```
 
-La app se conectará automáticamente.
+## Funcionalidades
+
+- Login y registro
+- Persistencia del JWT
+- Generación de la rutina
+- Coach IA
+- Estadísticas de progreso
