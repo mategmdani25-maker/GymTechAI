@@ -129,7 +129,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
             const SizedBox(height: 24),
 
-            // MEJORA: SELLO DE GARANTÍA Y CONFIANZA VISIBLE
+            // SELLO DE GARANTÍA Y CONFIANZA VISIBLE
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -158,6 +158,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
             _buildFAQTile("¿Cómo funciona el sistema de invitación?", "En tu perfil tendrás un código único. Si un amigo se registra con él, él pagará solo 19,99€/mes de por vida y tú te llevarás 5€ limpios de comisión por recomendación."),
             _buildFAQTile("¿Cuándo puedo retirar mis ganancias?", "Puedes retirar tu dinero acumulado de forma segura mediante PayPal o transferencia bancaria una vez alcances el mínimo de 50€."),
             _buildFAQTile("¿Tengo permanencia en los planes de pago?", "No, GymTechAI no tiene ninguna permanencia. Puedes cancelar tu suscripción premium o de entrenador en cualquier momento desde los ajustes."),
+            const SizedBox(height: 24),
+
+            // MEJORA: BOTÓN DE SOPORTE DIRECTO PARA REDUCIR FRICCIÓN DE COMPRA
+            Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Abriendo chat de asistencia técnica con GymTechAI..."),
+                      backgroundColor: Colors.cyan,
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.headset_mic_outlined, size: 18, color: Colors.grey),
+                label: const Text(
+                  "¿Tienes dudas personalizadas? Habla con soporte",
+                  style: TextStyle(color: Colors.grey, fontSize: 13, decoration: TextDecoration.underline),
+                ),
+              ),
+            ),
             const SizedBox(height: 30),
           ],
         ),
